@@ -110,7 +110,7 @@ fn make_mask_set() -> MaskSet {
         }
     }
 
-    return ms;
+    ms
 }
 
 fn batk(sq: Square, b: Bitboard) -> Bitboard {
@@ -181,13 +181,13 @@ fn ratk(sq: Square, b: Bitboard) -> Bitboard {
     ret
 }
 
-// xorshift* PRNG
+// xorshift* Prng
 // https://en.wikipedia.org/wiki/Xorshift
-struct PRNG {
+struct Prng {
     state: u64,
 }
 
-impl PRNG {
+impl Prng {
     fn next(&mut self) -> u64 {
         self.state ^= self.state >> 12;
         self.state ^= self.state << 25;
@@ -210,7 +210,7 @@ struct Magic {
 
 impl Magic {
     fn transform(&self, b: Bitboard) -> u64 {
-        return u64::wrapping_mul(b, self.num) >> self.shift;
+        u64::wrapping_mul(b, self.num) >> self.shift
     }
 }
 
@@ -222,7 +222,7 @@ impl Magic {
 // - sq:     The square to check the magic for
 // - bishop: If true, will check if the magic is valid for a bishop on sq.
 //           Otherwise it checks if the magic is valid for a rook on sq
-fn check_mag(ms: &MaskSet, mag: &Magic, vec: &mut Vec<Bitboard>, sq: Square, bishop: bool) -> bool {
+fn check_mag(ms: &MaskSet, mag: &Magic, vec: &mut [Bitboard], sq: Square, bishop: bool) -> bool {
     let rel_mask = if bishop {
         ms.brel[sq as usize]
     } else {
@@ -274,7 +274,7 @@ fn find_mag(
     bishop: bool,
 ) -> (Magic, Vec<Bitboard>) {
     // Seed the PRNG
-    let mut rng = PRNG {
+    let mut rng = Prng {
         state: std::time::SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Unexpected SystemTime error")
@@ -317,7 +317,7 @@ fn find_mag(
     }
 
     match ret_mag {
-        Some(mag) => return (mag, ret_vec),
+        Some(mag) => (mag, ret_vec),
         None => panic!("unexpected panic on magic generation"),
     }
 }
@@ -360,13 +360,13 @@ fn make_table_set(ms: &MaskSet) -> TableSet {
         rmag: [Default::default(); 64],
         rmag_tbl: [(); 64].map(|_| Default::default()),
     };
-    for sq in 0..64 as Square {
-        let (mag, tbl) = find_bmag(&ms, sq, duration);
+    for sq in 0..64 {
+        let (mag, tbl) = find_bmag(ms, sq, duration);
         ret.bmag[sq as usize] = mag;
         ret.bmag_tbl[sq as usize] = tbl;
     }
     for sq in 0..64 {
-        let (mag, tbl) = find_rmag(&ms, sq, duration);
+        let (mag, tbl) = find_rmag(ms, sq, duration);
         ret.rmag[sq as usize] = mag;
         ret.rmag_tbl[sq as usize] = tbl;
     }
