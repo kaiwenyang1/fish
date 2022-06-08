@@ -1,5 +1,4 @@
 use crate::aliases::{Bitboard, Move};
-use std::fmt;
 
 // Using From-To based move encoding
 //
@@ -74,6 +73,12 @@ pub enum Colour {
     Black,
 }
 
+impl Colour {
+    pub fn values() -> [Self; 2] {
+        [Self::White, Self::Black]
+    }
+}
+
 #[derive(Copy, Clone)]
 pub enum Piece {
     King,
@@ -84,81 +89,67 @@ pub enum Piece {
     Pawn,
 }
 
-#[derive(Copy, Clone)]
-pub struct Board {
-    piece_bb: [[Bitboard; 6]; 2],
-    piece_to_move: Colour,
-}
-
-const COLOURS_T: [Colour; 2] = [Colour::White, Colour::Black];
-const PIECES_T: [Piece; 6] = [
-    Piece::King,
-    Piece::Queen,
-    Piece::Rook,
-    Piece::Bishop,
-    Piece::Knight,
-    Piece::Pawn,
-];
-
 impl Piece {
-    pub fn get_piece(&self, colour: Colour) -> String {
-        match colour {
-            Colour::White => format!("{}", self).to_uppercase(),
-            Colour::Black => format!("{}", self),
-        }
+    pub fn values() -> [Self; 6] {
+        [
+            Self::King,
+            Self::Queen,
+            Self::Rook,
+            Self::Bishop,
+            Self::Knight,
+            Self::Pawn,
+        ]
     }
 }
 
-impl Board {
-    fn get_piece(&self, idx: u8) -> String {
-        for (colour, colour_t) in self.piece_bb.iter().zip(COLOURS_T) {
-            for (bitboard, piece_t) in colour.iter().zip(PIECES_T) {
+#[derive(Copy, Clone)]
+pub struct Position {
+    bitboards: [[Bitboard; 6]; 2],
+    side: Colour,
+}
+
+impl Position {
+    fn square_repr(&self, idx: u8) -> char {
+        for colour in Colour::values() {
+            for piece in Piece::values() {
+                let bitboard = self.bitboards[colour as usize][piece as usize];
                 if (bitboard >> idx) & 1 == 1 {
-                    return piece_t.get_piece(colour_t);
+                    match "♔♕♖♗♘♙♚♛♜♝♞♟"
+                        .chars()
+                        .nth(6 * colour as usize + piece as usize)
+                    {
+                        Some(c) => return c,
+                        None => panic!(),
+                    }
                 }
             }
         }
-        String::from(".")
+        '.'
     }
 
-    pub fn print_bitboard(&self) {
-        let mut out: u64 = 0;
-        for colour in self.piece_bb {
-            for bitboard in colour {
-                out |= bitboard;
-            }
-        }
-        println!("{}", out);
+    pub fn print(&self) {
         for rank in (0..8).rev() {
             for file in 0..8 {
-                print!("|{}", (out >> (8 * rank + file)) & 1);
-            }
-            println!("|");
-        }
-    }
-
-    pub fn print_board(&self) {
-        for rank in (0..8).rev() {
-            for file in 0..8 {
-                print!("|{}", self.get_piece(8 * rank + file));
+                print!("|{}", self.square_repr(8 * rank + file));
             }
             println!("|");
         }
     }
 
     pub fn generate_pseudo_legal(&self) -> Vec<Move> {
-        let pieces_bb = match self.piece_to_move {
-            Colour::White => self.piece_bb[0],
-            Colour::Black => self.piece_bb[1],
+        let pieces_bb = match self.side {
+            Colour::White => self.bitboards[0],
+            Colour::Black => self.bitboards[1],
         };
 
         let mut moves: Vec<Move> = Vec::new();
 
-        for (&piece_bb, piece_t) in pieces_bb.iter().zip(PIECES_T) {
+        for piece in Piece::values() {
+            let piece_bb = pieces_bb[piece as usize];
             println!("{:?}", serialize_bb(piece_bb));
             for piece_bb in serialize_bb(piece_bb) {
                 // TODO: Add additional information such as enpassant and castling
-                let mut pos_moves = match piece_t {
+                let mut pos_moves = match piece {
                     Piece::King => gen_king_moves(piece_bb),
                     Piece::Queen => gen_queen_moves(piece_bb),
                     Piece::Rook => gen_rook_moves(piece_bb),
@@ -170,19 +161,6 @@ impl Board {
             }
         }
         moves
-    }
-}
-
-impl fmt::Display for Piece {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Piece::King => write!(f, "k"),
-            Piece::Queen => write!(f, "q"),
-            Piece::Rook => write!(f, "r"),
-            Piece::Bishop => write!(f, "b"),
-            Piece::Knight => write!(f, "n"),
-            Piece::Pawn => write!(f, "p"),
-        }
     }
 }
 
@@ -210,9 +188,9 @@ pub fn gen_pawn_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn init_chess() -> Board {
-    Board {
-        piece_bb: [
+pub fn init_chess() -> Position {
+    Position {
+        bitboards: [
             [
                 WKING_BIT_BOARD,
                 WQUEEN_BIT_BOARD,
@@ -230,7 +208,7 @@ pub fn init_chess() -> Board {
                 BPAWN_BIT_BOARD,
             ],
         ],
-        piece_to_move: Colour::White,
+        side: Colour::White,
     }
 }
 
