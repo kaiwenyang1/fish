@@ -1,4 +1,4 @@
-use crate::aliases::{Bitboard, Move};
+use crate::aliases::{Bitboard, Move, Square};
 
 // Using From-To based move encoding
 //
@@ -65,6 +65,7 @@ enum EnumSquare {
     A6, B6, C6, D6, E6, F6, G6, H6,
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8,
+    Null,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -105,7 +106,12 @@ impl Piece {
 #[derive(Copy, Clone)]
 pub struct Position {
     bitboards: [[Bitboard; 6]; 2],
+    side_bitboards: [Bitboard; 2],
     side: Colour,
+    ep_target: Square,
+
+    // castling rights: qkQK
+    castling: u8,
 }
 
 impl Position {
@@ -208,7 +214,23 @@ pub fn init_chess() -> Position {
                 BPAWN_BIT_BOARD,
             ],
         ],
+        side_bitboards: [
+            WKING_BIT_BOARD
+                | WQUEEN_BIT_BOARD
+                | WROOK_BIT_BOARD
+                | WBISHOP_BIT_BOARD
+                | WKNIGHT_BIT_BOARD
+                | WPAWN_BIT_BOARD,
+            BKING_BIT_BOARD
+                | BQUEEN_BIT_BOARD
+                | BROOK_BIT_BOARD
+                | BBISHOP_BIT_BOARD
+                | BKNIGHT_BIT_BOARD
+                | BPAWN_BIT_BOARD,
+        ],
         side: Colour::White,
+        ep_target: EnumSquare::Null as Square,
+        castling: 0xf,
     }
 }
 
