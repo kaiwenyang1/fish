@@ -1,6 +1,5 @@
+use crate::aliases::{Bitboard, Move};
 use std::fmt;
-
-type BitBoard = u64;
 
 // Using From-To based move encoding
 //
@@ -9,7 +8,6 @@ type BitBoard = u64;
 //  promotion|capture|special 1|special 0|  from  |   to
 //
 // https://www.chessprogramming.org/Encoding_Moves
-type Move = u32;
 
 fn move_get_to(mov: Move) -> u8 {
     (mov & 0x3f) as u8
@@ -42,20 +40,20 @@ const BP_CAPTURE: u8 = 13;
 const RP_CAPTURE: u8 = 14;
 const QP_CAPTURE: u8 = 15;
 
-const WKING_BIT_BOARD: BitBoard = 1 << 4;
-const WQUEEN_BIT_BOARD: BitBoard = 1 << 3;
-const WROOK_BIT_BOARD: BitBoard = 1 << 0 | 1 << 7;
-const WBISHOP_BIT_BOARD: BitBoard = 1 << 2 | 1 << 5;
-const WKNIGHT_BIT_BOARD: BitBoard = 1 << 1 | 1 << 6;
-const WPAWN_BIT_BOARD: BitBoard =
+const WKING_BIT_BOARD: Bitboard = 1 << 4;
+const WQUEEN_BIT_BOARD: Bitboard = 1 << 3;
+const WROOK_BIT_BOARD: Bitboard = 1 << 0 | 1 << 7;
+const WBISHOP_BIT_BOARD: Bitboard = 1 << 2 | 1 << 5;
+const WKNIGHT_BIT_BOARD: Bitboard = 1 << 1 | 1 << 6;
+const WPAWN_BIT_BOARD: Bitboard =
     1 << 8 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
 
-const BKING_BIT_BOARD: BitBoard = 1 << 60;
-const BQUEEN_BIT_BOARD: BitBoard = 1 << 59;
-const BROOK_BIT_BOARD: BitBoard = 1 << 56 | 1 << 63;
-const BBISHOP_BIT_BOARD: BitBoard = 1 << 58 | 1 << 61;
-const BKNIGHT_BIT_BOARD: BitBoard = 1 << 57 | 1 << 62;
-const BPAWN_BIT_BOARD: BitBoard =
+const BKING_BIT_BOARD: Bitboard = 1 << 60;
+const BQUEEN_BIT_BOARD: Bitboard = 1 << 59;
+const BROOK_BIT_BOARD: Bitboard = 1 << 56 | 1 << 63;
+const BBISHOP_BIT_BOARD: Bitboard = 1 << 58 | 1 << 61;
+const BKNIGHT_BIT_BOARD: Bitboard = 1 << 57 | 1 << 62;
+const BPAWN_BIT_BOARD: Bitboard =
     1 << 48 | 1 << 49 | 1 << 50 | 1 << 51 | 1 << 52 | 1 << 53 | 1 << 54 | 1 << 55;
 
 #[rustfmt::skip]
@@ -88,7 +86,7 @@ pub enum Piece {
 
 #[derive(Copy, Clone)]
 pub struct Board {
-    piece_bb: [[BitBoard; 6]; 2],
+    piece_bb: [[Bitboard; 6]; 2],
     piece_to_move: Colour,
 }
 
@@ -236,17 +234,17 @@ pub fn init_chess() -> Board {
     }
 }
 
-pub fn serialize_bb(bb: BitBoard) -> Vec<u8> {
+pub fn serialize_bb(bb: Bitboard) -> Vec<u8> {
     let mut bb = bb as i64;
     let mut set: Vec<u8> = Vec::new();
     while bb != 0 {
-        let lsb = (bb & -bb) as BitBoard;
+        let lsb = (bb & -bb) as Bitboard;
         set.push(lsb.trailing_zeros() as u8);
         bb &= bb - 1;
     }
     set
 }
 
-pub fn deserialize_bb(set: Vec<u8>) -> BitBoard {
+pub fn deserialize_bb(set: Vec<u8>) -> Bitboard {
     set.iter().fold(0, |acc, bb| acc ^ (1u64 << bb))
 }
