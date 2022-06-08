@@ -18,6 +18,10 @@ pub struct Lookup {
     // See: https://www.chessprogramming.org/Magic_Bitboards
     pub brel: [Bitboard; 64],
     pub rrel: [Bitboard; 64],
+
+    // Masks for king/knight
+    pub king: [Bitboard; 64],
+    pub knight: [Bitboard; 64],
 }
 
 pub fn make_mask_lookup() -> Lookup {
@@ -29,6 +33,8 @@ pub fn make_mask_lookup() -> Lookup {
         adiag: [0u64; 15],
         brel: [0u64; 64],
         rrel: [0u64; 64],
+        king: [0u64; 64],
+        knight: [0u64; 64],
     };
 
     for sq in 0..64 {
@@ -88,6 +94,28 @@ pub fn make_mask_lookup() -> Lookup {
         }
         if fl != 7 {
             ms.rrel[sq] &= !ms.file[7];
+        }
+    }
+
+    for sq in 0..64 {
+        let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
+        for r in 0.max(rk - 1)..8.min(rk + 2) {
+            for f in 0.max(fl as i8 - 1)..8.min(fl + 2) {
+                if r != rk || f != fl {
+                    ms.king[sq] |= ms.sq[(8 * r + f) as usize];
+                }
+            }
+        }
+    }
+
+    for sq in 0..64 {
+        let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
+        for r in 0.max(rk - 2)..8.min(rk + 3) {
+            for f in 0.max(fl - 2)..8.min(fl + 3) {
+                if (rk - r).abs() + (fl - f).abs() == 3 {
+                    ms.knight[sq] |= ms.sq[(8 * r + f) as usize];
+                }
+            }
         }
     }
 
