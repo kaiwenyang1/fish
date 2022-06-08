@@ -3,7 +3,11 @@ use std::fmt;
 type BitBoard = u64;
 
 // Using From-To based move encoding
-// | promotion | capture | special 1 | special 0 | from | to |
+//
+//      0    |   0   |    0    |    0    | 000000 | 000000
+//  ---------|-------|---------|---------|--------|--------
+//  promotion|capture|special 1|special 0|  from  |   to
+//
 // https://www.chessprogramming.org/Encoding_Moves
 type Move = u32;
 
