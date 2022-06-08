@@ -38,29 +38,87 @@ const BP_CAPTURE: u8 = 13;
 const RP_CAPTURE: u8 = 14;
 const QP_CAPTURE: u8 = 15;
 
-const WKING_BIT_BOARD: BitBoard = 1<<4;
-const WQUEEN_BIT_BOARD: BitBoard = 1<<3;
-const WROOK_BIT_BOARD: BitBoard = 1<<0 | 1<<7;
-const WBISHOP_BIT_BOARD: BitBoard = 1<<2 | 1<<5;
-const WKNIGHT_BIT_BOARD: BitBoard = 1<<1 | 1<<6;
-const WPAWN_BIT_BOARD: BitBoard = 1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15;
+const WKING_BIT_BOARD: BitBoard = 1 << 4;
+const WQUEEN_BIT_BOARD: BitBoard = 1 << 3;
+const WROOK_BIT_BOARD: BitBoard = 1 << 0 | 1 << 7;
+const WBISHOP_BIT_BOARD: BitBoard = 1 << 2 | 1 << 5;
+const WKNIGHT_BIT_BOARD: BitBoard = 1 << 1 | 1 << 6;
+const WPAWN_BIT_BOARD: BitBoard =
+    1 << 8 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
 
-const BKING_BIT_BOARD: BitBoard = 1<<60;
-const BQUEEN_BIT_BOARD: BitBoard = 1<<59;
-const BROOK_BIT_BOARD: BitBoard = 1<<56 | 1<<63;
-const BBISHOP_BIT_BOARD: BitBoard = 1<<58 | 1<<61;
-const BKNIGHT_BIT_BOARD: BitBoard = 1<<57 | 1<<62;
-const BPAWN_BIT_BOARD: BitBoard = 1<<48 | 1<<49 | 1<<50 | 1<<51 | 1<<52 | 1<<53 | 1<<54 | 1<<55;
+const BKING_BIT_BOARD: BitBoard = 1 << 60;
+const BQUEEN_BIT_BOARD: BitBoard = 1 << 59;
+const BROOK_BIT_BOARD: BitBoard = 1 << 56 | 1 << 63;
+const BBISHOP_BIT_BOARD: BitBoard = 1 << 58 | 1 << 61;
+const BKNIGHT_BIT_BOARD: BitBoard = 1 << 57 | 1 << 62;
+const BPAWN_BIT_BOARD: BitBoard =
+    1 << 48 | 1 << 49 | 1 << 50 | 1 << 51 | 1 << 52 | 1 << 53 | 1 << 54 | 1 << 55;
 
 enum EnumSquare {
-    A1, B1, C1, D1, E1, F1, G1, H1,
-    A2, B2, C2, D2, E2, F2, G2, H2,
-    A3, B3, C3, D3, E3, F3, G3, H3,
-    A4, B4, C4, D4, E4, F4, G4, H4,
-    A5, B5, C5, D5, E5, F5, G5, H5,
-    A6, B6, C6, D6, E6, F6, G6, H6,
-    A7, B7, C7, D7, E7, F7, G7, H7,
-    A8, B8, C8, D8, E8, F8, G8, H8,
+    A1,
+    B1,
+    C1,
+    D1,
+    E1,
+    F1,
+    G1,
+    H1,
+    A2,
+    B2,
+    C2,
+    D2,
+    E2,
+    F2,
+    G2,
+    H2,
+    A3,
+    B3,
+    C3,
+    D3,
+    E3,
+    F3,
+    G3,
+    H3,
+    A4,
+    B4,
+    C4,
+    D4,
+    E4,
+    F4,
+    G4,
+    H4,
+    A5,
+    B5,
+    C5,
+    D5,
+    E5,
+    F5,
+    G5,
+    H5,
+    A6,
+    B6,
+    C6,
+    D6,
+    E6,
+    F6,
+    G6,
+    H6,
+    A7,
+    B7,
+    C7,
+    D7,
+    E7,
+    F7,
+    G7,
+    H7,
+    A8,
+    B8,
+    C8,
+    D8,
+    E8,
+    F8,
+    G8,
+    H8,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -68,7 +126,7 @@ pub enum Colour {
     White,
     Black,
 }
- 
+
 #[derive(Copy, Clone)]
 pub enum Piece {
     King,
@@ -86,7 +144,14 @@ pub struct Board {
 }
 
 const COLOURS_T: [Colour; 2] = [Colour::White, Colour::Black];
-const PIECES_T: [Piece; 6] = [Piece::King, Piece::Queen, Piece::Rook, Piece::Bishop, Piece::Knight, Piece::Pawn];
+const PIECES_T: [Piece; 6] = [
+    Piece::King,
+    Piece::Queen,
+    Piece::Rook,
+    Piece::Bishop,
+    Piece::Knight,
+    Piece::Pawn,
+];
 
 impl Piece {
     pub fn get_piece(&self, colour: Colour) -> String {
@@ -102,7 +167,7 @@ impl Board {
         for (colour, colour_t) in self.piece_bb.iter().zip(COLOURS_T) {
             for (bitboard, piece_t) in colour.iter().zip(PIECES_T) {
                 if (bitboard >> idx) & 1 == 1 {
-                    return piece_t.get_piece(colour_t)
+                    return piece_t.get_piece(colour_t);
                 }
             }
         }
@@ -119,22 +184,22 @@ impl Board {
         println!("{}", out);
         for rank in (0..8).rev() {
             for file in 0..8 {
-                print!("|{}", (out >> (8*rank + file))&1);
-            }
-            println!("|");
-        }
-    }
-    
-    pub fn print_board(&self) {
-        for rank in (0..8).rev() {
-            for file in 0..8 {
-                print!("|{}", self.get_piece(8*rank+file));
+                print!("|{}", (out >> (8 * rank + file)) & 1);
             }
             println!("|");
         }
     }
 
-    pub fn generate_pseudo_legal(&self) -> Vec<Move>{
+    pub fn print_board(&self) {
+        for rank in (0..8).rev() {
+            for file in 0..8 {
+                print!("|{}", self.get_piece(8 * rank + file));
+            }
+            println!("|");
+        }
+    }
+
+    pub fn generate_pseudo_legal(&self) -> Vec<Move> {
         let pieces_bb = match self.piece_to_move {
             Colour::White => self.piece_bb[0],
             Colour::Black => self.piece_bb[1],
@@ -158,7 +223,7 @@ impl Board {
             }
         }
         moves
-    }    
+    }
 }
 
 impl fmt::Display for Piece {
@@ -174,37 +239,51 @@ impl fmt::Display for Piece {
     }
 }
 
-pub fn gen_king_moves(idx: u8) -> Vec<Move>{
+pub fn gen_king_moves(idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_queen_moves(idx: u8) -> Vec<Move>{
+pub fn gen_queen_moves(idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_rook_moves(idx: u8) -> Vec<Move>{
+pub fn gen_rook_moves(idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_bishop_moves(idx: u8) -> Vec<Move>{
+pub fn gen_bishop_moves(idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_knight_moves(idx: u8) -> Vec<Move>{
+pub fn gen_knight_moves(idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_pawn_moves(idx: u8) -> Vec<Move>{
+pub fn gen_pawn_moves(idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn init_chess() -> Board{
-    Board{
+pub fn init_chess() -> Board {
+    Board {
         piece_bb: [
-            [WKING_BIT_BOARD, WQUEEN_BIT_BOARD, WROOK_BIT_BOARD, WBISHOP_BIT_BOARD, WKNIGHT_BIT_BOARD, WPAWN_BIT_BOARD],
-            [BKING_BIT_BOARD, BQUEEN_BIT_BOARD, BROOK_BIT_BOARD, BBISHOP_BIT_BOARD, BKNIGHT_BIT_BOARD, BPAWN_BIT_BOARD],
+            [
+                WKING_BIT_BOARD,
+                WQUEEN_BIT_BOARD,
+                WROOK_BIT_BOARD,
+                WBISHOP_BIT_BOARD,
+                WKNIGHT_BIT_BOARD,
+                WPAWN_BIT_BOARD,
+            ],
+            [
+                BKING_BIT_BOARD,
+                BQUEEN_BIT_BOARD,
+                BROOK_BIT_BOARD,
+                BBISHOP_BIT_BOARD,
+                BKNIGHT_BIT_BOARD,
+                BPAWN_BIT_BOARD,
+            ],
         ],
-        piece_to_move: Colour::White
+        piece_to_move: Colour::White,
     }
 }
 
