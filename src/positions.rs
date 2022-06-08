@@ -171,7 +171,7 @@ impl Board {
                 }
             }
         }
-        return String::from(".");
+        String::from(".")
     }
 
     pub fn print_bitboard(&self) {
@@ -239,27 +239,27 @@ impl fmt::Display for Piece {
     }
 }
 
-pub fn gen_king_moves(idx: u8) -> Vec<Move> {
+pub fn gen_king_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_queen_moves(idx: u8) -> Vec<Move> {
+pub fn gen_queen_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_rook_moves(idx: u8) -> Vec<Move> {
+pub fn gen_rook_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_bishop_moves(idx: u8) -> Vec<Move> {
+pub fn gen_bishop_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_knight_moves(idx: u8) -> Vec<Move> {
+pub fn gen_knight_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn gen_pawn_moves(idx: u8) -> Vec<Move> {
+pub fn gen_pawn_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
@@ -295,9 +295,9 @@ pub fn serialize_bb(bb: BitBoard) -> Vec<u8> {
         set.push(lsb.trailing_zeros() as u8);
         bb &= bb - 1;
     }
-    return set;
+    set
 }
 
 pub fn deserialize_bb(set: Vec<u8>) -> BitBoard {
-    set.iter().fold(0, |acc, bb| acc ^ ((1 as u64) << bb))
+    set.iter().fold(0, |acc, bb| acc ^ (1u64 << bb))
 }
