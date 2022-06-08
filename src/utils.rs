@@ -1,6 +1,6 @@
 use crate::aliases::Bitboard;
 
-fn print_bb(bb: Bitboard) {
+pub fn print_bb(bb: Bitboard) {
     println!("\n  {:#018x}\n", bb);
     for rank in (0u8..8).rev() {
         print!("{}  ", rank + 1);
