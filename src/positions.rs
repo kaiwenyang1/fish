@@ -1,5 +1,5 @@
 use crate::aliases::{Bitboard, Move, Square};
-use crate::enums;
+use crate::{enums, utils};
 
 // Using From-To based move encoding
 //
@@ -52,12 +52,12 @@ pub struct Position {
 }
 
 impl Position {
-    fn square_repr(&self, idx: u8) -> char {
+    fn square_repr(&self, sq: Square) -> char {
         for colour in enums::Colour::values() {
             for piece in enums::Piece::values() {
                 let bitboard = self.bitboards[colour as usize][piece as usize];
-                if (bitboard >> idx) & 1 == 1 {
-                    match "♔♕♖♗♘♙♚♛♜♝♞♟"
+                if (bitboard >> sq) & 1 == 1 {
+                    match "♘♗♖♕♙♔♞♝♜♛♟♚"
                         .chars()
                         .nth(6 * colour as usize + piece as usize)
                     {
@@ -70,13 +70,40 @@ impl Position {
         '.'
     }
 
-    pub fn print(&self) {
-        for rank in (0..8).rev() {
-            for file in 0..8 {
-                print!("|{}", self.square_repr(8 * rank + file));
+    pub fn string(&self) -> String {
+        let side_string = match self.side {
+            enums::Colour::White => "w",
+            enums::Colour::Black => "b",
+        };
+
+        let mut castling_string = String::new();
+        for (i, c) in "KQkq".chars().enumerate() {
+            if (self.castling >> i) & 1 != 0 {
+                castling_string.push(c);
             }
-            println!("|");
         }
+        if castling_string.is_empty() {
+            castling_string = String::from("-");
+        }
+
+        let mut ret = format!(
+            "{} cs:{} ep:{}\n",
+            side_string,
+            castling_string,
+            utils::square_string(self.ep_target)
+        );
+        for rank in (0..8).rev() {
+            ret.push_str(&*format!("{} ", rank + 1));
+            for file in 0..8 {
+                ret.push_str(&*format!("{}", self.square_repr(8 * rank + file)));
+                if file != 7 {
+                    ret.push(' ');
+                }
+            }
+            ret.push('\n');
+        }
+        ret.push_str("  A B C D E F G H");
+        ret
     }
 
     pub fn generate_pseudo_legal(&self) -> Vec<Move> {
