@@ -158,17 +158,17 @@ pub fn gen_pawn_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
 }
 
-pub fn serialize_bb(bb: Bitboard) -> Vec<u8> {
+pub fn bb_squares(bb: Bitboard) -> Vec<Square> {
     let mut bb = bb as i64;
-    let mut set: Vec<u8> = Vec::new();
+    let mut set: Vec<Square> = Vec::new();
     while bb != 0 {
-        let lsb = (bb & -bb) as Bitboard;
-        set.push(lsb.trailing_zeros() as u8);
-        bb &= bb - 1;
+        let lsb = (bb & 0i64.wrapping_sub(bb)) as Bitboard;
+        set.push(lsb.trailing_zeros() as Square);
+        bb &= bb.wrapping_sub(1);
     }
     set
 }
 
-pub fn deserialize_bb(set: Vec<u8>) -> Bitboard {
+pub fn make_bb(set: Vec<u8>) -> Bitboard {
     set.iter().fold(0, |acc, bb| acc ^ (1u64 << bb))
 }
