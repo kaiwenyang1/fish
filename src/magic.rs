@@ -99,7 +99,7 @@ pub struct Magic {
 }
 
 impl Magic {
-    fn transform(&self, b: Bitboard) -> u64 {
+    pub fn transform(&self, b: Bitboard) -> u64 {
         u64::wrapping_mul(b, self.num) >> self.shift
     }
 }
@@ -219,23 +219,9 @@ fn find_mag(
 }
 
 pub fn find_bmag(ms: &masks::Lookup, sq: Square, d: std::time::Duration) -> (Magic, Vec<Bitboard>) {
-    let ret = find_mag(ms, sq, d, true);
-    println!(
-        "found bishop magic {:#018X} for square {} with width {}",
-        ret.0.num,
-        sq,
-        64 - ret.0.shift
-    );
-    ret
+    find_mag(ms, sq, d, true)
 }
 
 pub fn find_rmag(ms: &masks::Lookup, sq: Square, d: std::time::Duration) -> (Magic, Vec<Bitboard>) {
-    let ret = find_mag(ms, sq, d, false);
-    println!(
-        "found rook magic {:#018X} for square {} with width {}",
-        ret.0.num,
-        sq,
-        64 - ret.0.shift
-    );
-    ret
+    find_mag(ms, sq, d, false)
 }
