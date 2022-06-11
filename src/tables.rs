@@ -8,7 +8,7 @@ pub struct Lookup {
     pub rmag_tbl: [Vec<Bitboard>; 64],
 }
 
-pub fn make_table_set(ms: &masks::Lookup) -> Lookup {
+pub fn make_lookup(ms: &masks::Lookup) -> Lookup {
     // Duration allocated to generate each magic
     let duration = std::time::Duration::from_millis(100);
     let mut ret: Lookup = Lookup {
