@@ -10,7 +10,7 @@ pub struct Lookup {
 
 pub fn make_lookup(ms: &masks::Lookup) -> Lookup {
     // Duration allocated to generate each magic
-    let duration = std::time::Duration::from_millis(100);
+    let duration = std::time::Duration::from_millis(0);
     let mut ret: Lookup = Lookup {
         bmag: [Default::default(); 64],
         bmag_tbl: [(); 64].map(|_| Default::default()),
