@@ -25,36 +25,20 @@ fn make_move(from: u8, to: u8, special: u8) -> Move {
     (to as Move) | ((from as Move) << 6) | ((special as Move) << 12)
 }
 
-const QUIET_MOVE: u8 = 0;
-const DOUBLE_PAWN_PUSH: u8 = 1;
-const KING_CASTLE: u8 = 2;
-const QUEEN_CASTLE: u8 = 3;
-const CAPTURES: u8 = 4;
-const EP_CAPTURE: u8 = 5;
-const KNIGHT_PROM: u8 = 8;
-const BISHOP_PROM: u8 = 9;
-const ROOK_PROM: u8 = 10;
-const QUEEN_PROM: u8 = 11;
-const NP_CAPTURE: u8 = 12;
-const BP_CAPTURE: u8 = 13;
-const RP_CAPTURE: u8 = 14;
-const QP_CAPTURE: u8 = 15;
-
-const WKING_BIT_BOARD: Bitboard = 1 << 4;
-const WQUEEN_BIT_BOARD: Bitboard = 1 << 3;
-const WROOK_BIT_BOARD: Bitboard = 1 << 0 | 1 << 7;
-const WBISHOP_BIT_BOARD: Bitboard = 1 << 2 | 1 << 5;
-const WKNIGHT_BIT_BOARD: Bitboard = 1 << 1 | 1 << 6;
-const WPAWN_BIT_BOARD: Bitboard =
-    1 << 8 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
-
-const BKING_BIT_BOARD: Bitboard = 1 << 60;
-const BQUEEN_BIT_BOARD: Bitboard = 1 << 59;
-const BROOK_BIT_BOARD: Bitboard = 1 << 56 | 1 << 63;
-const BBISHOP_BIT_BOARD: Bitboard = 1 << 58 | 1 << 61;
-const BKNIGHT_BIT_BOARD: Bitboard = 1 << 57 | 1 << 62;
-const BPAWN_BIT_BOARD: Bitboard =
-    1 << 48 | 1 << 49 | 1 << 50 | 1 << 51 | 1 << 52 | 1 << 53 | 1 << 54 | 1 << 55;
+const FLAG_QUIET_MOVE: u8 = 0;
+const FLAG_DOUBLE_PAWN_PUSH: u8 = 1;
+const FLAG_KING_CASTLE: u8 = 2;
+const FLAG_QUEEN_CASTLE: u8 = 3;
+const FLAG_CAPTURE: u8 = 4;
+const FLAG_EP_CAPTURE: u8 = 5;
+const FLAG_PROMOTE_KNIGHT: u8 = 8;
+const FLAG_PROMOTE_BISHOP: u8 = 9;
+const FLAG_PROMOTE_ROOK: u8 = 10;
+const FLAG_PROMOTE_QUEEN: u8 = 11;
+const FLAG_CAPTURE_PROMOTE_KNIGHT: u8 = 12;
+const FLAG_CAPTURE_PROMOTE_BISHOP: u8 = 13;
+const FLAG_CAPTURE_PROMOTE_ROOK: u8 = 14;
+const FLAG_CAPTURE_PROMOTE_QUEEN: u8 = 15;
 
 #[derive(Copy, Clone)]
 pub struct Position {
@@ -145,46 +129,6 @@ pub fn gen_knight_moves(_idx: u8) -> Vec<Move> {
 
 pub fn gen_pawn_moves(_idx: u8) -> Vec<Move> {
     vec![1, 2]
-}
-
-pub fn init_chess() -> Position {
-    Position {
-        bitboards: [
-            [
-                WKING_BIT_BOARD,
-                WQUEEN_BIT_BOARD,
-                WROOK_BIT_BOARD,
-                WBISHOP_BIT_BOARD,
-                WKNIGHT_BIT_BOARD,
-                WPAWN_BIT_BOARD,
-            ],
-            [
-                BKING_BIT_BOARD,
-                BQUEEN_BIT_BOARD,
-                BROOK_BIT_BOARD,
-                BBISHOP_BIT_BOARD,
-                BKNIGHT_BIT_BOARD,
-                BPAWN_BIT_BOARD,
-            ],
-        ],
-        side_bitboards: [
-            WKING_BIT_BOARD
-                | WQUEEN_BIT_BOARD
-                | WROOK_BIT_BOARD
-                | WBISHOP_BIT_BOARD
-                | WKNIGHT_BIT_BOARD
-                | WPAWN_BIT_BOARD,
-            BKING_BIT_BOARD
-                | BQUEEN_BIT_BOARD
-                | BROOK_BIT_BOARD
-                | BBISHOP_BIT_BOARD
-                | BKNIGHT_BIT_BOARD
-                | BPAWN_BIT_BOARD,
-        ],
-        side: enums::Colour::White,
-        ep_target: enums::Square::Null as Square,
-        castling: 0xf,
-    }
 }
 
 pub fn serialize_bb(bb: Bitboard) -> Vec<u8> {
