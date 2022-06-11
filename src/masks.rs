@@ -1,4 +1,5 @@
 use crate::aliases::Bitboard;
+use crate::enums;
 
 pub struct Lookup {
     // Mask a square
@@ -22,6 +23,9 @@ pub struct Lookup {
     // Masks for king/knight
     pub king: [Bitboard; 64],
     pub knight: [Bitboard; 64],
+
+    // Masks for pawns
+    pub pcapture: [[Bitboard; 64]; 2],
 }
 
 pub fn make_mask_lookup() -> Lookup {
@@ -35,6 +39,7 @@ pub fn make_mask_lookup() -> Lookup {
         rrel: [0u64; 64],
         king: [0u64; 64],
         knight: [0u64; 64],
+        pcapture: [[0; 64]; 2],
     };
 
     for sq in 0..64 {
@@ -116,6 +121,22 @@ pub fn make_mask_lookup() -> Lookup {
                     ms.knight[sq] |= ms.sq[(8 * r + f) as usize];
                 }
             }
+        }
+    }
+
+    for sq in 0..64 {
+        let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
+        if rk + 1 < 8 && fl > 0 {
+            ms.pcapture[enums::Colour::White as usize][sq as usize] |= 1u64 << (sq + 7);
+        }
+        if rk + 1 < 8 && fl + 1 < 8 {
+            ms.pcapture[enums::Colour::White as usize][sq as usize] |= 1u64 << (sq + 9);
+        }
+        if rk > 0 && fl + 1 < 8 {
+            ms.pcapture[enums::Colour::Black as usize][sq as usize] |= 1u64 << (sq - 7);
+        }
+        if rk > 0 && fl > 0 {
+            ms.pcapture[enums::Colour::Black as usize][sq as usize] |= 1u64 << (sq - 9);
         }
     }
 
