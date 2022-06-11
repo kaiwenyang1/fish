@@ -9,15 +9,15 @@ use crate::enums;
 //
 // https://www.chessprogramming.org/Encoding_Moves
 
-fn move_get_to(mov: Move) -> u8 {
+pub fn move_get_to(mov: Move) -> u8 {
     (mov & 0x3f) as u8
 }
 
-fn move_get_from(mov: Move) -> u8 {
+pub fn move_get_from(mov: Move) -> u8 {
     ((mov >> 6) & 0x3f) as u8
 }
 
-fn move_get_code(mov: Move) -> u8 {
+pub fn move_get_code(mov: Move) -> u8 {
     ((mov >> 12) & 0xf) as u8
 }
 
