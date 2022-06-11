@@ -1,4 +1,5 @@
 use crate::aliases::{Bitboard, Move, Square};
+use crate::enums;
 
 // Using From-To based move encoding
 //
@@ -55,59 +56,11 @@ const BKNIGHT_BIT_BOARD: Bitboard = 1 << 57 | 1 << 62;
 const BPAWN_BIT_BOARD: Bitboard =
     1 << 48 | 1 << 49 | 1 << 50 | 1 << 51 | 1 << 52 | 1 << 53 | 1 << 54 | 1 << 55;
 
-#[rustfmt::skip]
-enum EnumSquare {
-    A1, B1, C1, D1, E1, F1, G1, H1,
-    A2, B2, C2, D2, E2, F2, G2, H2,
-    A3, B3, C3, D3, E3, F3, G3, H3,
-    A4, B4, C4, D4, E4, F4, G4, H4,
-    A5, B5, C5, D5, E5, F5, G5, H5,
-    A6, B6, C6, D6, E6, F6, G6, H6,
-    A7, B7, C7, D7, E7, F7, G7, H7,
-    A8, B8, C8, D8, E8, F8, G8, H8,
-    Null,
-}
-
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub enum Colour {
-    White,
-    Black,
-}
-
-impl Colour {
-    pub fn values() -> [Self; 2] {
-        [Self::White, Self::Black]
-    }
-}
-
-#[derive(Copy, Clone)]
-pub enum Piece {
-    King,
-    Queen,
-    Rook,
-    Bishop,
-    Knight,
-    Pawn,
-}
-
-impl Piece {
-    pub fn values() -> [Self; 6] {
-        [
-            Self::King,
-            Self::Queen,
-            Self::Rook,
-            Self::Bishop,
-            Self::Knight,
-            Self::Pawn,
-        ]
-    }
-}
-
 #[derive(Copy, Clone)]
 pub struct Position {
     bitboards: [[Bitboard; 6]; 2],
     side_bitboards: [Bitboard; 2],
-    side: Colour,
+    side: enums::Colour,
     ep_target: Square,
 
     // castling rights: qkQK
@@ -116,8 +69,8 @@ pub struct Position {
 
 impl Position {
     fn square_repr(&self, idx: u8) -> char {
-        for colour in Colour::values() {
-            for piece in Piece::values() {
+        for colour in enums::Colour::values() {
+            for piece in enums::Piece::values() {
                 let bitboard = self.bitboards[colour as usize][piece as usize];
                 if (bitboard >> idx) & 1 == 1 {
                     match "♔♕♖♗♘♙♚♛♜♝♞♟"
@@ -144,24 +97,24 @@ impl Position {
 
     pub fn generate_pseudo_legal(&self) -> Vec<Move> {
         let pieces_bb = match self.side {
-            Colour::White => self.bitboards[0],
-            Colour::Black => self.bitboards[1],
+            enums::Colour::White => self.bitboards[0],
+            enums::Colour::Black => self.bitboards[1],
         };
 
         let mut moves: Vec<Move> = Vec::new();
 
-        for piece in Piece::values() {
+        for piece in enums::Piece::values() {
             let piece_bb = pieces_bb[piece as usize];
             println!("{:?}", serialize_bb(piece_bb));
             for piece_bb in serialize_bb(piece_bb) {
                 // TODO: Add additional information such as enpassant and castling
                 let mut pos_moves = match piece {
-                    Piece::King => gen_king_moves(piece_bb),
-                    Piece::Queen => gen_queen_moves(piece_bb),
-                    Piece::Rook => gen_rook_moves(piece_bb),
-                    Piece::Bishop => gen_bishop_moves(piece_bb),
-                    Piece::Knight => gen_knight_moves(piece_bb),
-                    Piece::Pawn => gen_pawn_moves(piece_bb),
+                    enums::Piece::King => gen_king_moves(piece_bb),
+                    enums::Piece::Queen => gen_queen_moves(piece_bb),
+                    enums::Piece::Rook => gen_rook_moves(piece_bb),
+                    enums::Piece::Bishop => gen_bishop_moves(piece_bb),
+                    enums::Piece::Knight => gen_knight_moves(piece_bb),
+                    enums::Piece::Pawn => gen_pawn_moves(piece_bb),
                 };
                 moves.append(&mut pos_moves);
             }
@@ -228,8 +181,8 @@ pub fn init_chess() -> Position {
                 | BKNIGHT_BIT_BOARD
                 | BPAWN_BIT_BOARD,
         ],
-        side: Colour::White,
-        ep_target: EnumSquare::Null as Square,
+        side: enums::Colour::White,
+        ep_target: enums::Square::Null as Square,
         castling: 0xf,
     }
 }
