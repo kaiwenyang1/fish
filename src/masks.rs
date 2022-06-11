@@ -28,7 +28,7 @@ pub struct Lookup {
     pub pcapture: [[Bitboard; 64]; 2],
 }
 
-pub fn make_mask_lookup() -> Lookup {
+pub fn make_lookup() -> Lookup {
     let mut ms = Lookup {
         sq: [0u64; 64],
         rank: [0u64; 8],
