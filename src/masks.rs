@@ -28,117 +28,119 @@ pub struct Lookup {
     pub pcapture: [[Bitboard; 64]; 2],
 }
 
-pub fn make_lookup() -> Lookup {
-    let mut ms = Lookup {
-        sq: [0u64; 64],
-        rank: [0u64; 8],
-        file: [0u64; 8],
-        diag: [0u64; 15],
-        adiag: [0u64; 15],
-        brel: [0u64; 64],
-        rrel: [0u64; 64],
-        king: [0u64; 64],
-        knight: [0u64; 64],
-        pcapture: [[0; 64]; 2],
-    };
+impl Lookup {
+    pub fn new() -> Lookup {
+        let mut ms = Lookup {
+            sq: [0u64; 64],
+            rank: [0u64; 8],
+            file: [0u64; 8],
+            diag: [0u64; 15],
+            adiag: [0u64; 15],
+            brel: [0u64; 64],
+            rrel: [0u64; 64],
+            king: [0u64; 64],
+            knight: [0u64; 64],
+            pcapture: [[0; 64]; 2],
+        };
 
-    for sq in 0..64 {
-        ms.sq[sq] = 1u64 << sq;
-    }
-
-    for rk in 0..8 {
-        for fl in 0..8 {
-            let sq = 8 * rk + fl;
-            ms.rank[rk] |= ms.sq[sq];
+        for sq in 0..64 {
+            ms.sq[sq] = 1u64 << sq;
         }
-    }
 
-    for fl in 0..8 {
         for rk in 0..8 {
-            let sq = 8 * rk + fl;
-            ms.file[fl] |= ms.sq[sq];
-        }
-    }
-
-    for dg in 0..15 {
-        for sq in 0..64 {
-            let (rk, fl) = (sq / 8, sq % 8);
-            if 7 + rk - fl == dg {
-                ms.diag[dg] |= ms.sq[sq];
+            for fl in 0..8 {
+                let sq = 8 * rk + fl;
+                ms.rank[rk] |= ms.sq[sq];
             }
         }
-    }
 
-    for adg in 0..15 {
-        for sq in 0..64 {
-            let (rk, fl) = (sq / 8, sq % 8);
-            if rk + fl == adg {
-                ms.adiag[adg] |= ms.sq[sq];
+        for fl in 0..8 {
+            for rk in 0..8 {
+                let sq = 8 * rk + fl;
+                ms.file[fl] |= ms.sq[sq];
             }
         }
-    }
 
-    for sq in 0..64 {
-        let (rk, fl) = (sq / 8, sq % 8);
-        let (dg, adg) = (7 + rk - fl, rk + fl);
-        ms.brel[sq] = (ms.diag[dg] | ms.adiag[adg]) ^ ms.sq[sq];
-        ms.brel[sq] &= !(ms.rank[0] | ms.rank[7] | ms.file[0] | ms.file[7]);
-    }
-
-    for sq in 0..64 {
-        let (rk, fl) = (sq / 8, sq % 8);
-        ms.rrel[sq] = (ms.rank[rk] | ms.file[fl]) ^ ms.sq[sq];
-        if rk != 0 {
-            ms.rrel[sq] &= !ms.rank[0];
-        }
-        if rk != 7 {
-            ms.rrel[sq] &= !ms.rank[7];
-        }
-        if fl != 0 {
-            ms.rrel[sq] &= !ms.file[0];
-        }
-        if fl != 7 {
-            ms.rrel[sq] &= !ms.file[7];
-        }
-    }
-
-    for sq in 0..64 {
-        let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
-        for r in 0.max(rk - 1)..8.min(rk + 2) {
-            for f in 0.max(fl as i8 - 1)..8.min(fl + 2) {
-                if r != rk || f != fl {
-                    ms.king[sq] |= ms.sq[(8 * r + f) as usize];
+        for dg in 0..15 {
+            for sq in 0..64 {
+                let (rk, fl) = (sq / 8, sq % 8);
+                if 7 + rk - fl == dg {
+                    ms.diag[dg] |= ms.sq[sq];
                 }
             }
         }
-    }
 
-    for sq in 0..64 {
-        let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
-        for r in 0.max(rk - 2)..8.min(rk + 3) {
-            for f in 0.max(fl - 2)..8.min(fl + 3) {
-                if (rk - r).abs() + (fl - f).abs() == 3 {
-                    ms.knight[sq] |= ms.sq[(8 * r + f) as usize];
+        for adg in 0..15 {
+            for sq in 0..64 {
+                let (rk, fl) = (sq / 8, sq % 8);
+                if rk + fl == adg {
+                    ms.adiag[adg] |= ms.sq[sq];
                 }
             }
         }
-    }
 
-    for sq in 0..64 {
-        let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
-        if rk + 1 < 8 && fl > 0 {
-            ms.pcapture[enums::Colour::White as usize][sq as usize] |= 1u64 << (sq + 7);
+        for sq in 0..64 {
+            let (rk, fl) = (sq / 8, sq % 8);
+            let (dg, adg) = (7 + rk - fl, rk + fl);
+            ms.brel[sq] = (ms.diag[dg] | ms.adiag[adg]) ^ ms.sq[sq];
+            ms.brel[sq] &= !(ms.rank[0] | ms.rank[7] | ms.file[0] | ms.file[7]);
         }
-        if rk + 1 < 8 && fl + 1 < 8 {
-            ms.pcapture[enums::Colour::White as usize][sq as usize] |= 1u64 << (sq + 9);
-        }
-        if rk > 0 && fl + 1 < 8 {
-            ms.pcapture[enums::Colour::Black as usize][sq as usize] |= 1u64 << (sq - 7);
-        }
-        if rk > 0 && fl > 0 {
-            ms.pcapture[enums::Colour::Black as usize][sq as usize] |= 1u64 << (sq - 9);
-        }
-    }
 
-    ms
+        for sq in 0..64 {
+            let (rk, fl) = (sq / 8, sq % 8);
+            ms.rrel[sq] = (ms.rank[rk] | ms.file[fl]) ^ ms.sq[sq];
+            if rk != 0 {
+                ms.rrel[sq] &= !ms.rank[0];
+            }
+            if rk != 7 {
+                ms.rrel[sq] &= !ms.rank[7];
+            }
+            if fl != 0 {
+                ms.rrel[sq] &= !ms.file[0];
+            }
+            if fl != 7 {
+                ms.rrel[sq] &= !ms.file[7];
+            }
+        }
+
+        for sq in 0..64 {
+            let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
+            for r in 0.max(rk - 1)..8.min(rk + 2) {
+                for f in 0.max(fl as i8 - 1)..8.min(fl + 2) {
+                    if r != rk || f != fl {
+                        ms.king[sq] |= ms.sq[(8 * r + f) as usize];
+                    }
+                }
+            }
+        }
+
+        for sq in 0..64 {
+            let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
+            for r in 0.max(rk - 2)..8.min(rk + 3) {
+                for f in 0.max(fl - 2)..8.min(fl + 3) {
+                    if (rk - r).abs() + (fl - f).abs() == 3 {
+                        ms.knight[sq] |= ms.sq[(8 * r + f) as usize];
+                    }
+                }
+            }
+        }
+
+        for sq in 0..64 {
+            let (rk, fl): (i8, i8) = ((sq / 8) as i8, (sq % 8) as i8);
+            if rk + 1 < 8 && fl > 0 {
+                ms.pcapture[enums::Colour::White as usize][sq as usize] |= 1u64 << (sq + 7);
+            }
+            if rk + 1 < 8 && fl + 1 < 8 {
+                ms.pcapture[enums::Colour::White as usize][sq as usize] |= 1u64 << (sq + 9);
+            }
+            if rk > 0 && fl + 1 < 8 {
+                ms.pcapture[enums::Colour::Black as usize][sq as usize] |= 1u64 << (sq - 7);
+            }
+            if rk > 0 && fl > 0 {
+                ms.pcapture[enums::Colour::Black as usize][sq as usize] |= 1u64 << (sq - 9);
+            }
+        }
+
+        ms
+    }
 }

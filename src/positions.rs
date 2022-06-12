@@ -58,6 +58,65 @@ pub struct Position {
 }
 
 impl Position {
+    pub fn new(fen: &str) -> Position {
+        let mut ret = Position {
+            bitboards: [[0u64; 6]; 2],
+            side_bitboards: [0u64; 2],
+            all_bitboard: 0,
+            side: enums::Colour::White,
+            ep_target: enums::Square::Null as Square,
+            castling: 0,
+        };
+        let mut tokens = fen.split(' ');
+
+        let board_token = tokens
+            .next()
+            .expect("fen piece placement data not provided");
+        for (rk, line) in (0..8).zip(board_token.split('/').rev()) {
+            let mut fl = 0;
+            for c in line.chars() {
+                let cp = utils::ascii_colour_piece(c);
+                match cp {
+                    Some((colour, piece)) => {
+                        let sq = 8 * rk + fl;
+                        ret.bitboards[colour as usize][piece as usize] |= 1 << sq;
+                        fl += 1;
+                    }
+                    None => {
+                        fl += c
+                            .to_digit(10)
+                            .expect("expected number to describe empty squares");
+                    }
+                }
+            }
+        }
+
+        let side_token = tokens.next().expect("fen active color not provided");
+        match side_token {
+            "w" => ret.side = enums::Colour::White,
+            "b" => ret.side = enums::Colour::Black,
+            _ => panic!("bad fen active colour provided, expected 'w' or 'b'"),
+        }
+
+        let castling_token = tokens.next().expect("fen castling rights not provided");
+        for (i, c) in "KQkq".chars().enumerate() {
+            if castling_token.contains(c) {
+                ret.castling |= 1 << i;
+            }
+        }
+
+        let ep_target_token = tokens.next().expect("fen en passant target not provided");
+        ret.ep_target = utils::string_square(ep_target_token);
+
+        for (i, side_bb) in ret.side_bitboards.iter_mut().enumerate() {
+            *side_bb = ret.bitboards[i].iter().fold(0, |acc, bb| acc | bb);
+        }
+
+        ret.all_bitboard = ret.side_bitboards[0] | ret.side_bitboards[1];
+
+        ret
+    }
+
     fn square_repr(&self, sq: Square) -> char {
         for colour in enums::Colour::values() {
             for piece in enums::Piece::values() {
@@ -298,65 +357,6 @@ impl Position {
 
         ret
     }
-}
-
-pub fn make_position(fen: &str) -> Position {
-    let mut ret = Position {
-        bitboards: [[0u64; 6]; 2],
-        side_bitboards: [0u64; 2],
-        all_bitboard: 0,
-        side: enums::Colour::White,
-        ep_target: enums::Square::Null as Square,
-        castling: 0,
-    };
-    let mut tokens = fen.split(' ');
-
-    let board_token = tokens
-        .next()
-        .expect("fen piece placement data not provided");
-    for (rk, line) in (0..8).zip(board_token.split('/').rev()) {
-        let mut fl = 0;
-        for c in line.chars() {
-            let cp = utils::ascii_colour_piece(c);
-            match cp {
-                Some((colour, piece)) => {
-                    let sq = 8 * rk + fl;
-                    ret.bitboards[colour as usize][piece as usize] |= 1 << sq;
-                    fl += 1;
-                }
-                None => {
-                    fl += c
-                        .to_digit(10)
-                        .expect("expected number to describe empty squares");
-                }
-            }
-        }
-    }
-
-    let side_token = tokens.next().expect("fen active color not provided");
-    match side_token {
-        "w" => ret.side = enums::Colour::White,
-        "b" => ret.side = enums::Colour::Black,
-        _ => panic!("bad fen active colour provided, expected 'w' or 'b'"),
-    }
-
-    let castling_token = tokens.next().expect("fen castling rights not provided");
-    for (i, c) in "KQkq".chars().enumerate() {
-        if castling_token.contains(c) {
-            ret.castling |= 1 << i;
-        }
-    }
-
-    let ep_target_token = tokens.next().expect("fen en passant target not provided");
-    ret.ep_target = utils::string_square(ep_target_token);
-
-    for (i, side_bb) in ret.side_bitboards.iter_mut().enumerate() {
-        *side_bb = ret.bitboards[i].iter().fold(0, |acc, bb| acc | bb);
-    }
-
-    ret.all_bitboard = ret.side_bitboards[0] | ret.side_bitboards[1];
-
-    ret
 }
 
 pub fn bb_squares(bb: Bitboard) -> Vec<Square> {
