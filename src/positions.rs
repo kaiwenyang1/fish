@@ -1,4 +1,5 @@
 use crate::aliases::{Bitboard, Move, Square};
+use crate::masks::Lookup;
 use crate::{enums, masks, tables, utils};
 
 // Using From-To based move encoding
@@ -279,7 +280,19 @@ impl Position {
     }
 
     pub fn gen_knight_moves(&self, from: Square, m: &masks::Lookup) -> Vec<Move> {
-        self.gen_from_atk(from, m.knight[from as usize])
+        let mut ret: Vec<Move> = Vec::new();
+        for moves in self.gen_from_atk(from, m.knight[from as usize]) {
+            let locationfrom = move_get_from(moves);
+            let to = move_get_to(moves);
+            let code = move_get_code(moves);
+            if (self.side_bitboards[self.side as usize ^ 1] & (1 << to)) > 0 {
+                ret.push(make_move(locationfrom, to, FLAG_CAPTURE));
+            } else {
+                ret.push(make_move(locationfrom, to, FLAG_QUIET_MOVE));
+            }
+        }
+
+        ret
     }
 
     pub fn gen_pawn_moves(&self, from: Square, m: &masks::Lookup) -> Vec<Move> {
